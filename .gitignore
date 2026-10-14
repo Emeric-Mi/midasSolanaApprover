@@ -1,0 +1,11 @@
+.env
+.env.local
+node_modules/
+dist/
+.idea
+
+.DS_Store
+*.tar
+*.log
+.yarn/install-state.gz
+.claude/

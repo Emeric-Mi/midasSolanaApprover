@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #f4f6fa;
+  color: #25272a;
+  font-family:
+    'Geist',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The adapter ships its own button styling; override it to the Midas navy. */
+.wallet-adapter-button {
+  background: #2a3e6e !important;
+  color: #fff !important;
+  font-family: inherit !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  height: 40px !important;
+  line-height: 40px !important;
+  border-radius: 8px !important;
+}
+
+.wallet-adapter-button:not([disabled]):hover {
+  background: #3a5290 !important;
+}
+
+.wallet-adapter-modal-wrapper {
+  background: #fff !important;
+  font-family: inherit !important;
+}
+
+.wallet-adapter-modal-title {
+  color: #25272a !important;
+}

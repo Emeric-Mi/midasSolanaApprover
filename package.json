@@ -1,0 +1,42 @@
+{
+  "name": "midas-delegate-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc && vite build",
+    "dev": "vite",
+    "format": "oxfmt --disable-nested-config",
+    "format:check": "oxfmt --check --disable-nested-config",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@solana/spl-token": "0.4.9",
+    "@solana/wallet-adapter-base": "0.9.28",
+    "@solana/wallet-adapter-phantom": "0.9.28",
+    "@solana/wallet-adapter-react": "0.15.40",
+    "@solana/wallet-adapter-react-ui": "0.9.40",
+    "@solana/wallet-adapter-solflare": "0.6.32",
+    "@solana/web3.js": "1.99.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.31",
+    "@types/react-dom": "18.3.7",
+    "@vitejs/plugin-react": "4.3.4",
+    "autoprefixer": "10.4.20",
+    "oxfmt": "0.48.0",
+    "postcss": "8.4.49",
+    "tailwindcss": "3.4.16",
+    "typescript": "5.9.3",
+    "vite": "5.4.21",
+    "vite-plugin-node-polyfills": "0.22.0"
+  },
+  "resolutions": {
+    "@types/react": "18.3.31"
+  },
+  "packageManager": "yarn@4.13.0",
+  "comment": "react-native, pulled in transitively by the mobile wallet adapter, drags @types/react@19 into the tree and breaks JSX typing against React 18."
+}
