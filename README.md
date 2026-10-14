@@ -10,38 +10,70 @@ actually transfers anything. You can revoke at any time, and revoking is immedia
 No block explorer can do this, Solscan, Solana Explorer and SolanaFM are read-only, and
 neither Phantom nor Solflare exposes `approve` in their interface. Hence this page.
 
-## Requirements
+## Use the hosted version
 
-- [Node.js](https://nodejs.org) 18 or newer (`node --version` to check)
-- A Solana wallet: Phantom or Solflare, **or** a Squads multisig (see below)
+<https://midas-token-delegation.pages.dev>
 
-## Running it
+Nothing to install. Skip to [Using it](#using-it).
+
+## Or run it yourself
+
+Requires [Node.js](https://nodejs.org) 20 or newer (`node --version` to check).
 
 ```bash
-git clone <this-repo>
-cd midas-delegate-ui
-npm install
-npm run dev
+git clone https://github.com/Emeric-Mi/midasSolanaApprover.git
+cd midasSolanaApprover
+corepack enable
+yarn install
+yarn dev
 ```
 
-Open the URL it prints (usually <http://localhost:5173>).
+Open the URL it prints, usually <http://localhost:5173>.
 
-To build a static bundle instead, `npm run build` writes to `dist/`, which can be served
-by any static host.
+There is nothing to install globally. `corepack enable` is a one-off, and the pinned Yarn
+version in `.yarn/releases/` is picked up automatically.
 
-### RPC endpoint
+`yarn build` writes a static bundle to `dist/` if you would rather serve it yourself.
 
-The app ships with a public endpoint that works out of the box but is rate-limited. For
-anything beyond occasional use, point it at your own RPC by creating a `.env.local` file
-in the project root:
+### Using your own RPC
+
+The default public endpoint works out of the box but is rate-limited. To use your own,
+create a `.env.local` file in the project root:
 
 ```
 VITE_MAINNET_RPC=https://your-endpoint
 VITE_DEVNET_RPC=https://your-devnet-endpoint
 ```
 
-Note that `https://api.mainnet-beta.solana.com` cannot be used here: it answers browser
-requests with `403 Access forbidden`.
+`https://api.mainnet-beta.solana.com` will not work here: it answers browser requests
+with `403 Access forbidden`.
+
+## Reading the code
+
+The app is entirely client-side. There is no backend, no analytics and no storage:
+the only network calls are to the Solana RPC endpoint and to your wallet extension.
+
+Everything that builds a transaction lives in one file, **`src/lib/spl.ts`** (about 200
+lines). The functions worth reading, in the order they run:
+
+| Function              | What it does                                                                                                                       |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `resolveTokenProgram` | Reads the mint account to find its owning program, legacy SPL or Token-2022. Never assumed, because it decides the ATA derivation. |
+| `deriveAta`           | Derives the associated token account. `allowOwnerOffCurve` is on so a Squads vault PDA works.                                      |
+| `loadAta`             | Reads the current balance, delegate and delegated amount.                                                                          |
+| `toBaseUnits`         | Converts the amount you type using the mint's decimals, and rejects excess precision rather than rounding it away.                 |
+| `buildApproveIx`      | Builds the `ApproveChecked` instruction.                                                                                           |
+| `buildRevokeIx`       | Builds the `Revoke` instruction.                                                                                                   |
+| `sendIx`              | Wraps one instruction in a transaction, hands it to your wallet to sign, and waits for confirmation.                               |
+
+The approval uses `ApproveChecked` rather than `Approve`: it carries the mint and the
+decimals, so the on-chain program rejects a mismatched amount instead of accepting it at
+the wrong scale.
+
+`src/App.tsx` is user interface only, and `src/components/` holds presentational pieces.
+Neither builds instructions. The token list in `src/lib/tokens.ts` is plain data.
+
+Nothing is minified or bundled in the repository; what you read is what runs.
 
 ## Using it
 
@@ -95,36 +127,12 @@ disabled once you enter a vault address as the owner. Instead:
    reorder them, and keep the signer/writable flags as displayed.
 4. Collect the required signatures and execute.
 
-### Verifying afterwards
+### Checking it worked
 
-Open your token account on Solscan, the link is in the Current state panel, and check
-the **Delegate** and **Delegated Amount** fields.
+Open your token account on Solscan, the link is in the Current state panel, and check the
+**Delegate** and **Delegated Amount** fields.
 
-## Notes
-
-- Legacy SPL Token and Token-2022 mints are both supported. The owning program is read
-  from the mint account rather than assumed, and it determines how the associated token
-  account address is derived.
-- Amounts that carry more decimal places than the mint allows are rejected rather than
-  silently rounded.
-- The approval uses `ApproveChecked`, which validates the mint and decimals on-chain, so
-  a mismatched amount fails instead of succeeding at the wrong scale.
-- `@types/react` is pinned through `overrides` in `package.json`: `react-native`, pulled
-  in transitively by the mobile wallet adapter, otherwise brings React 19 types into the
-  tree and breaks JSX typing.
-
-## For maintainers
-
-Tokens in the selector come from `src/lib/tokens.ts`, keyed by cluster. Adding one is a
-single entry in that file; nothing else needs to change.
-
-```ts
-mainnet: [
-  { symbol: 'USDC', mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' },
-],
-```
-
-### Background
+## Background
 
 In the Solana vault program, `approve_redeem_request` transfers payment tokens **from an
 account owned by the integrator** (`request_redeemer`) and signs that transfer with the

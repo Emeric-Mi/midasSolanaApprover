@@ -9,3 +9,4 @@ dist/
 *.log
 .yarn/install-state.gz
 .claude/
+.wrangler/
