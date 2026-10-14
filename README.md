@@ -10,15 +10,10 @@ actually transfers anything. You can revoke at any time, and revoking is immedia
 No block explorer can do this, Solscan, Solana Explorer and SolanaFM are read-only, and
 neither Phantom nor Solflare exposes `approve` in their interface. Hence this page.
 
-## Use the hosted version
+## Running it
 
-<https://midas-token-delegation.pages.dev>
-
-Nothing to install. Skip to [Using it](#using-it).
-
-## Or run it yourself
-
-Requires [Node.js](https://nodejs.org) 20 or newer (`node --version` to check).
+Requires [Node.js](https://nodejs.org) 20.19 or newer, or 22.12 or newer
+(`node --version` to check).
 
 ```bash
 git clone https://github.com/Emeric-Mi/midasSolanaApprover.git
