@@ -15,6 +15,7 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 import { Field, TextInput } from './components/Field';
 import { RawInstruction } from './components/RawInstruction';
 import { Logo } from './components/Logo';
+import { WalletConnectButton } from './components/WalletConnectButton';
 import { TOKENS, CUSTOM_MINT } from './lib/tokens';
 import {
   RPC_ENDPOINTS,
@@ -193,6 +194,7 @@ function Delegate({ cluster, setCluster }: { cluster: Cluster; setCluster: (c: C
             <option value="mainnet">Mainnet Beta</option>
             <option value="devnet">Devnet</option>
           </select>
+          <WalletConnectButton />
           <WalletMultiButton />
         </div>
       </header>
