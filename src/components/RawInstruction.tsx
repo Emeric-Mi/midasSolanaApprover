@@ -35,8 +35,9 @@ export function RawInstruction({ view }: { view: RawIxView }) {
     <div className="rounded-card border border-midas-border bg-midas-canvas p-5">
       <h3 className="mb-1 text-sm font-semibold text-midas-ink">Raw instruction</h3>
       <p className="mb-4 text-sm text-midas-muted">
-        For multisig signers (Squads and similar). Paste these values into your custom transaction
-        builder instead of connecting a wallet above. Account order matters.
+        For custody platforms and multisigs that build transactions themselves (Fireblocks, Squads
+        and similar). Paste these values into your transaction builder instead of connecting a
+        wallet above. Account order matters.
       </p>
 
       <Row label="Program" value={view.programId} />

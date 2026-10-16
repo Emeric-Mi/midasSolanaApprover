@@ -8,6 +8,8 @@ import {
 import { WalletModalProvider, WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
+import { WalletConnectWalletAdapter } from '@solana/wallet-adapter-walletconnect';
+import { WalletAdapterNetwork, type Adapter } from '@solana/wallet-adapter-base';
 import '@solana/wallet-adapter-react-ui/styles.css';
 
 import { Field, TextInput } from './components/Field';
@@ -375,7 +377,7 @@ function Delegate({ cluster, setCluster }: { cluster: Cluster; setCluster: (c: C
             }
             className="text-sm text-midas-accent hover:underline disabled:text-midas-muted disabled:no-underline"
           >
-            Show raw instruction for Squads
+            Show raw instruction
           </button>
         </div>
 
@@ -428,7 +430,26 @@ function Delegate({ cluster, setCluster }: { cluster: Cluster; setCluster: (c: C
 export default function App() {
   const [cluster, setCluster] = useState<Cluster>('mainnet');
   const endpoint = RPC_ENDPOINTS[cluster];
-  const wallets = useMemo(() => [new PhantomWalletAdapter(), new SolflareWalletAdapter()], []);
+
+  const wallets = useMemo(() => {
+    const list: Adapter[] = [new PhantomWalletAdapter(), new SolflareWalletAdapter()];
+
+    // WalletConnect is how custody platforms (Fireblocks and similar) connect to a
+    // dApp. It needs a Reown project id, so the option only appears once one is
+    // configured; a clone without it still gets the browser wallets.
+    const projectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
+    if (projectId) {
+      list.push(
+        new WalletConnectWalletAdapter({
+          network:
+            cluster === 'devnet' ? WalletAdapterNetwork.Devnet : WalletAdapterNetwork.Mainnet,
+          options: { projectId },
+        }),
+      );
+    }
+
+    return list;
+  }, [cluster]);
 
   return (
     <ConnectionProvider endpoint={endpoint}>

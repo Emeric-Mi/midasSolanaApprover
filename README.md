@@ -43,6 +43,26 @@ VITE_DEVNET_RPC=https://your-devnet-endpoint
 `https://api.mainnet-beta.solana.com` will not work here: it answers browser requests
 with `403 Access forbidden`.
 
+### Enabling WalletConnect
+
+WalletConnect is how custody platforms connect to a dApp when they have no browser
+extension. It needs a free project id from <https://cloud.reown.com>, set in the same
+`.env.local`:
+
+```
+VITE_WALLETCONNECT_PROJECT_ID=your-project-id
+```
+
+Without it the WalletConnect option is simply hidden, and browser wallets still work.
+
+## Supported wallets
+
+| Wallet                                           | How it connects                                                                      |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| Phantom, Solflare                                | Listed explicitly.                                                                   |
+| Fordefi, Backpack, any Wallet Standard extension | Detected automatically if the extension is installed. Nothing to configure.          |
+| Fireblocks and other custody platforms           | WalletConnect, if a project id is set. Otherwise use the raw instruction, see below. |
+
 ## Reading the code
 
 The app is entirely client-side. There is no backend, no analytics and no storage:
@@ -54,7 +74,7 @@ lines). The functions worth reading, in the order they run:
 | Function              | What it does                                                                                                                       |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `resolveTokenProgram` | Reads the mint account to find its owning program, legacy SPL or Token-2022. Never assumed, because it decides the ATA derivation. |
-| `deriveAta`           | Derives the associated token account. `allowOwnerOffCurve` is on so a Squads vault PDA works.                                      |
+| `deriveAta`           | Derives the associated token account. `allowOwnerOffCurve` is on so a custody or multisig PDA works.                               |
 | `loadAta`             | Reads the current balance, delegate and delegated amount.                                                                          |
 | `toBaseUnits`         | Converts the amount you type using the mint's decimals, and rejects excess precision rather than rounding it away.                 |
 | `buildApproveIx`      | Builds the `ApproveChecked` instruction.                                                                                           |
@@ -76,8 +96,8 @@ Nothing is minified or bundled in the repository; what you read is what runs.
    wallet.
 2. **Token**, pick the payment token to delegate.
 3. **Token Account Owner**, leave empty to use your connected wallet. If the tokens are
-   held by a Squads vault, enter the **vault address** here (not the multisig address,
-   and not your personal wallet).
+   held by a custody platform or a multisig, enter that **vault address** here, not your
+   personal wallet.
 4. The **Current state** panel loads your associated token account and shows the balance,
    the existing delegate if any, and the amount currently delegated. Check this before
    acting, it tells you whether an approval is already in place.
@@ -110,17 +130,22 @@ be yours, not the wallet's, before confirming, verify:
 If any of those is wrong, close the dialog. If they are all correct, proceed through the
 override.
 
-### If you sign with Squads
+### If your platform builds transactions itself
 
-A browser wallet cannot sign on behalf of a Squads vault, so the Approve button will be
-disabled once you enter a vault address as the owner. Instead:
+Fireblocks, Squads and similar platforms hold tokens at an address that a browser wallet
+cannot sign for. If you enter such an address as the owner, the Approve button is
+disabled on purpose. Use the raw instruction instead:
 
-1. Fill in the form as above, with the Squads vault address as the owner.
-2. Click **Show raw instruction for Squads**.
-3. Copy the program ID, the accounts and the instruction data into a custom transaction
-   in Squads. **The account order shown is the order the instruction requires**, do not
-   reorder them, and keep the signer/writable flags as displayed.
-4. Collect the required signatures and execute.
+1. Fill in the form as above, with the custody or vault address as the owner.
+2. Click **Show raw instruction**.
+3. Copy the program ID, the accounts and the instruction data into a transaction in your
+   platform. **The account order shown is the order the instruction requires**, do not
+   reorder them, and keep the signer and writable flags as displayed.
+4. Collect the required approvals and execute.
+
+Note that some custody platforms restrict which programs or instruction types they will
+sign. An SPL `ApproveChecked` is not a plain transfer, so it may need to be permitted in
+your transaction policy first.
 
 ### Checking it worked
 
